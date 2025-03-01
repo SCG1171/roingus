@@ -4,6 +4,10 @@ import { log } from "./vite";
 
 const app = express();
 
+app.get("/", (req, res) => {
+  res.send("Running Discord Application...");
+});
+
 (async () => {
   const server = await registerRoutes(app);
 

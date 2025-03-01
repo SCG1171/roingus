@@ -23,13 +23,23 @@ const intents = new IntentsBitField([
   IntentsBitField.Flags.MessageContent,
   IntentsBitField.Flags.GuildBans,
   IntentsBitField.Flags.GuildModeration,
-  IntentsBitField.Flags.GuildPresences
+  IntentsBitField.Flags.GuildPresences,
 ]);
 
 const slashCommands = new Collection<string, any>();
 const commands = [
-  ping, ban, kick, timeout, purge, warn, hackban, tempban,
-  eightball, coinflip, random, userinfo
+  ping,
+  ban,
+  kick,
+  timeout,
+  purge,
+  warn,
+  hackban,
+  tempban,
+  eightball,
+  coinflip,
+  random,
+  userinfo,
 ];
 
 export async function startBot() {
@@ -37,11 +47,15 @@ export async function startBot() {
   const clientId = process.env.CLIENT_ID;
 
   if (!token || !clientId) {
-    throw new Error("DISCORD_TOKEN or CLIENT_ID not found in environment variables");
+    throw new Error(
+      "DISCORD_TOKEN or CLIENT_ID not found in environment variables",
+    );
   }
 
   console.log("Starting Discord bot initialization...");
-  console.log(`Token validation: length=${token.length}, starts with=${token.substring(0, 4)}...`);
+  console.log(
+    `Token validation: length=${token.length}, starts with=${token.substring(0, 4)}...`,
+  );
 
   const client = new Client({ intents });
 
@@ -57,9 +71,9 @@ export async function startBot() {
 
     // Deploy slash commands
     await deployCommands(
-      commands.map(c => c.command),
+      commands.map((c) => c.command),
       token,
-      clientId
+      clientId,
     );
 
     // Load traditional commands
@@ -93,7 +107,11 @@ export async function startBot() {
         await command.execute(interaction);
       } catch (error) {
         console.error(error);
-        const errorMessage = { content: 'There was an error executing this command!', ephemeral: true };
+        const errorMessage = {
+          content:
+            "⚠️ An error occured while attempting to run this command. Please try again.",
+          ephemeral: true,
+        };
         if (interaction.replied || interaction.deferred) {
           await interaction.followUp(errorMessage);
         } else {
