@@ -1,4 +1,4 @@
-import { Message, PermissionFlagsBits } from "discord.js";
+import { Message, PermissionFlagsBits, GuildMember } from "discord.js";
 import { checkPermissions } from "../../utils/permissions";
 
 export const name = "ban";
@@ -10,28 +10,28 @@ export const permissions = [PermissionFlagsBits.BanMembers];
 export async function execute(message: Message, args: string[]) {
   if (!(await checkPermissions(message, permissions))) return;
 
-  const member = message.mentions.members?.first();
+  const member: GuildMember | undefined = message.mentions.members?.first();
   if (!member) {
     return message.reply("I couldn't find the target user.");
   }
 
-  const reason = args.slice(1).join(" ") || "No reason provided";
+  const reason: string = args.slice(1).join(" ") || "No reason provided";
 
   if (!member.bannable) {
     return message.reply(
-      "Unable to ban user. Please make sure my role is higher than this user and that I have the necessary permissions to ban the target user.",
+      "Unable to ban user. Ensure my role is higher than this user and I have the necessary permissions."
     );
   }
 
   try {
     await member.ban({ reason });
-    message.reply(
-      `${user.tag} was banned from the server. Reason: \"${reason}\"`,
+    await message.reply(
+      `${member.user.tag} was banned from the server. Reason: "${reason}"`
     );
   } catch (error) {
-    message.reply(
-      "⚠️ An error occured while attempting to ban the target member. Please try again and ensure that I have the necessary permissions and that my role is higher than the target user or bot's highest role.",
+    console.error("Ban error:", error);
+    await message.reply(
+      "⚠️ An error occurred while attempting to ban the target member. Please check my permissions and role position."
     );
-    console.error(error);
   }
 }
