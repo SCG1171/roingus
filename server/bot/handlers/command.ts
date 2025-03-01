@@ -1,5 +1,5 @@
 import { Client, Collection, Message } from "discord.js";
-import { readdirSync } from "fs";
+import { readdirSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { checkCooldown } from "../utils/cooldown";
@@ -9,33 +9,39 @@ const __dirname = dirname(__filename);
 
 export const commands = new Collection<string, any>();
 
+async function loadCommandFile(filePath: string) {
+  try {
+    const commandModule = await import(filePath);
+    if (!commandModule.name || !commandModule.execute) {
+      console.warn(`⚠️ Skipping ${filePath}: Missing 'name' or 'execute' function`);
+      return;
+    }
+    commands.set(commandModule.name, commandModule);
+    console.log(`✅ Loaded command: ${commandModule.name}`);
+  } catch (error) {
+    console.error(`❌ Error loading command ${filePath}:`, error);
+  }
+}
+
 export async function loadCommands() {
-  console.log("Loading commands from:", join(__dirname, "../commands"));
-  const commandsPath = join(__dirname, "../commands");
-  const entries = readdirSync(commandsPath, { withFileTypes: true });
+  const commandsPath = join(__dirname, "../bot/commands");
+  console.log(`📂 Loading commands from: ${commandsPath}`);
 
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      // Handle command folders (like moderation, fun)
-      const folderPath = join(commandsPath, entry.name);
-      const commandFiles = readdirSync(folderPath)
-        .filter(file => file.endsWith(".ts") || file.endsWith(".js"));
+  function scanDirectory(directory: string) {
+    const entries = readdirSync(directory, { withFileTypes: true });
 
-      console.log(`Loading commands from ${entry.name} folder:`, commandFiles);
-      for (const file of commandFiles) {
-        const commandModule = await import(join(folderPath, file));
-        commands.set(commandModule.name, commandModule);
-        console.log(`Loaded command: ${commandModule.name}`);
+    for (const entry of entries) {
+      const fullPath = join(directory, entry.name);
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath); // Recursively scan subdirectories
+      } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
+        loadCommandFile(fullPath);
       }
-    } else if (entry.isFile() && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
-      // Handle root-level command files
-      const commandModule = await import(join(commandsPath, entry.name));
-      commands.set(commandModule.name, commandModule);
-      console.log(`Loaded command: ${commandModule.name}`);
     }
   }
 
-  console.log("Total commands loaded:", commands.size);
+  scanDirectory(commandsPath);
+  console.log(`✅ Total commands loaded: ${commands.size}`);
 }
 
 export async function handleCommand(client: Client, message: Message) {
@@ -48,19 +54,17 @@ export async function handleCommand(client: Client, message: Message) {
 
   const command = commands.get(commandName);
   if (!command) {
-    message.reply("That command doesn't exist! Use !help to see available commands.");
-    return;
+    return message.reply("⚠️ That command doesn't exist! Use !help to see available commands.");
   }
 
   if (await checkCooldown(message.author.id, command.name, command.cooldown)) {
-    const cooldownTime = command.cooldown || 3;
-    return message.reply(`Please wait ${cooldownTime} seconds before using this command again.`);
+    return message.reply(`⏳ Please wait ${command.cooldown || 3} seconds before using this command again.`);
   }
 
   try {
     await command.execute(message, args);
   } catch (error) {
-    console.error(`Error executing command ${commandName}:`, error);
-    message.reply("There was an error executing that command!");
+    console.error(`❌ Error executing command '${commandName}':`, error);
+    message.reply("⚠️ There was an error executing that command!");
   }
 }
