@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, GuildMember } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, GuildMember, TextChannel } from "discord.js";
 
 export const command = new SlashCommandBuilder()
   .setName("tempban")
@@ -47,7 +47,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   try {
-    await member.ban({ reason, deleteMessageSeconds: deleteDays * 86400 }); // Convert days to seconds
+    await member.ban({ reason, deleteMessageSeconds: deleteDays * 86400 });
 
     await interaction.reply(
       `Successfully banned **${user.tag}** for **${duration} hours**.\nReason: **${reason}**`
@@ -58,16 +58,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       try {
         await interaction.guild!.bans.remove(user.id, "Temporary ban duration expired");
 
-        if (interaction.channel && interaction.channel.isTextBased()) {
+        if (interaction.channel && interaction.channel.isTextBased() && interaction.channel instanceof TextChannel) {
           await interaction.channel.send(`🔓 **${user.tag}** has been unbanned (temporary ban expired).`);
         }
       } catch (error) {
         console.error("Error unbanning member:", error);
-        if (interaction.channel && interaction.channel.isTextBased()) {
+        if (interaction.channel && interaction.channel.isTextBased() && interaction.channel instanceof TextChannel) {
           await interaction.channel.send(`⚠️ Failed to unban **${user.tag}**. Please unban manually.`);
         }
       }
-    }, duration * 60 * 60 * 1000); // Convert hours to milliseconds
+    }, duration * 60 * 60 * 1000);
   } catch (error) {
     console.error("Error temp-banning member:", error);
     await interaction.reply({ content: "⚠️ There was an error banning the member.", ephemeral: true });
