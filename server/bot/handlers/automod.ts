@@ -1,4 +1,4 @@
-import { GuildMember, Collection, Guild } from "discord.js";
+import { GuildMember, Collection, Guild, GuildVerificationLevel } from "discord.js";
 
 interface JoinTracker {
   count: number;
@@ -38,8 +38,8 @@ export async function handleMemberJoin(member: GuildMember): Promise<boolean> {
   // Check if join rate indicates a raid
   if (tracker.count >= JOIN_THRESHOLD) {
     try {
-      // Enable server verification level
-      await guild.setVerificationLevel('HIGH');
+      // Enable server verification level using correct enum
+      await guild.setVerificationLevel(GuildVerificationLevel.High);
 
       // Timeout all recent joins
       for (const memberId of tracker.members) {
@@ -47,12 +47,12 @@ export async function handleMemberJoin(member: GuildMember): Promise<boolean> {
         await raidMember.timeout(300000, 'Automatic timeout: Potential raid detected');
       }
 
-      // Alert admins
+      // Alert admins in the system channel (if available)
       const systemChannel = guild.systemChannel;
-      if (systemChannel) {
+      if (systemChannel && systemChannel.isTextBased()) {
         await systemChannel.send({
           content: '🚨 **POTENTIAL RAID DETECTED**\n' +
-            `${tracker.count} members joined in the last ${JOIN_WINDOW/1000} seconds.\n` +
+            `${tracker.count} members joined in the last ${JOIN_WINDOW / 1000} seconds.\n` +
             'Auto-moderation has:\n' +
             '- Increased server verification level\n' +
             `- Timed out ${tracker.count} recent joins\n` +
