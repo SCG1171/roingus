@@ -1,0 +1,1 @@
+// This file will be removed, as the help command has been moved to utility/help.ts
