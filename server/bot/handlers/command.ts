@@ -1,5 +1,5 @@
 import { Client, Collection, Message } from "discord.js";
-import { readdirSync, statSync } from "fs";
+import { readdirSync, statSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { checkCooldown } from "../utils/cooldown";
@@ -11,7 +11,7 @@ export const commands = new Collection<string, any>();
 
 async function loadCommandFile(filePath: string) {
   try {
-    const commandModule = await import(filePath);
+    const commandModule = await import(`file://${filePath}`); // Ensure proper dynamic import
     if (!commandModule.name || !commandModule.execute) {
       console.warn(`⚠️ Skipping ${filePath}: Missing 'name' or 'execute' function`);
       return;
@@ -24,8 +24,16 @@ async function loadCommandFile(filePath: string) {
 }
 
 export async function loadCommands() {
-  const commandsPath = join(__dirname, "../bot/commands");
+  // Ensure correct absolute path resolution
+  const commandsPath = join(__dirname, "../../server/bot/commands");
+
   console.log(`📂 Loading commands from: ${commandsPath}`);
+
+  // :red_circle: Ensure the folder exists before scanning
+  if (!existsSync(commandsPath)) {
+    console.error(`❌ ERROR: Commands directory does not exist at ${commandsPath}`);
+    process.exit(1); // Stop execution to avoid further errors
+  }
 
   function scanDirectory(directory: string) {
     const entries = readdirSync(directory, { withFileTypes: true });
@@ -54,7 +62,7 @@ export async function handleCommand(client: Client, message: Message) {
 
   const command = commands.get(commandName);
   if (!command) {
-    return message.reply("⚠️ That command doesn't exist! Use !help to see available commands.");
+    return message.reply(":warning: That command doesn't exist! Use !help to see available commands.");
   }
 
   if (await checkCooldown(message.author.id, command.name, command.cooldown)) {
@@ -65,6 +73,6 @@ export async function handleCommand(client: Client, message: Message) {
     await command.execute(message, args);
   } catch (error) {
     console.error(`❌ Error executing command '${commandName}':`, error);
-    message.reply("⚠️ There was an error executing that command!");
+    message.reply(":warning: There was an error executing that command!");
   }
 }
