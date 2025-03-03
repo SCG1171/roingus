@@ -49,7 +49,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (!member.bannable) {
     return interaction.reply({
       content:
-        "Unable to ban user. Please make sure my role is higher than this user and that I have the necessary permissions to ban the target user.",
+        "Unable to ban user. Please ensure that the user does not have the Administrator permission in their roles.",
       ephemeral: true,
     });
   }
@@ -63,7 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     console.error("Error banning member:", error);
     await interaction.reply({
       content:
-        "⚠️ An error occured while attempting to ban the target member. Please try again and ensure that I have the necessary permissions and that my role is higher than the target user or bot's highest role.",
+        "⚠️ An error occurred while attempting to ban the target member. Please try again and ensure that I have the necessary permissions and that my role is higher than the target user's highest role.",
       ephemeral: true,
     });
   }
