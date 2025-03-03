@@ -51,7 +51,7 @@ export async function handleMemberJoin(member: GuildMember): Promise<boolean> {
       const systemChannel = guild.systemChannel;
       if (systemChannel && systemChannel.isTextBased()) {
         await systemChannel.send({
-          content: '🚨 **POTENTIAL RAID DETECTED**\n' +
+          content: '🚨 **WARNING: POTENTIAL RAID DETECTED**\n' +
             `${tracker.count} members joined in the last ${JOIN_WINDOW / 1000} seconds.\n` +
             'Auto-moderation has:\n' +
             '- Increased server verification level\n' +
