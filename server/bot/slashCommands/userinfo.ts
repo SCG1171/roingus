@@ -6,14 +6,14 @@ export const command = new SlashCommandBuilder()
   .addUserOption(option =>
     option
       .setName('user')
-      .setDescription('The user to get info about (defaults to yourself)'));
+      .setDescription('Target user'));
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   const targetUser = interaction.options.getUser('user') || interaction.user;
   const member = interaction.guild?.members.cache.get(targetUser.id);
 
   if (!interaction.guild) {
-    return interaction.reply({ content: 'This command can only be used in a server!', ephemeral: true });
+    return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
   }
 
   const embed = new EmbedBuilder()
@@ -21,7 +21,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     .setTitle(`User Info - ${targetUser.tag}`)
     .setThumbnail(targetUser.displayAvatarURL())
     .addFields(
-      { name: '🆔 ID', value: targetUser.id },
+      { name: '🆔 UID', value: targetUser.id },
       { name: '📅 Account Created', value: targetUser.createdAt.toLocaleDateString() },
       { name: '🎮 Activity', value: member?.presence?.activities[0]?.name || 'None' },
       { name: '🎭 Roles', value: member?.roles.cache.map(r => r.name).join(', ') || 'None' },
