@@ -43,7 +43,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   if (!member.bannable) {
-    return interaction.reply({ content: "I cannot ban this user!", ephemeral: true });
+    return interaction.reply({ content: "One or more roles on this user is preventing them from being banned. Please make sure the target user does not have the Administrator permission and try again.", ephemeral: true });
   }
 
   try {
