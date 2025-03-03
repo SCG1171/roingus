@@ -1,21 +1,21 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits } from "discord.js";
 
 export const command = new SlashCommandBuilder()
-  .setName('hackban')
+  .setName('forceban')
   .setDescription('Ban a user by ID (even if they are not in the server)')
   .addStringOption(option =>
     option
       .setName('userid')
-      .setDescription('The ID of the user to ban')
+      .setDescription('UID of target user')
       .setRequired(true))
   .addStringOption(option =>
     option
       .setName('reason')
-      .setDescription('The reason for the ban'))
+      .setDescription('Ban reason'))
   .addIntegerOption(option =>
     option
       .setName('deletedays')
-      .setDescription('Number of days of messages to delete')
+      .setDescription('Purge all messages from target user within X days (max 7 days)')
       .setMinValue(0)
       .setMaxValue(7))
   .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
@@ -26,7 +26,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const deleteDays = interaction.options.getInteger('deletedays') ?? 0;
 
   if (!interaction.guild) {
-    return interaction.reply({ content: 'This command can only be used in a server!', ephemeral: true });
+    return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
   }
 
   try {
@@ -43,11 +43,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       deleteMessageDays: deleteDays
     });
 
-    await interaction.reply(`Successfully banned user ID ${userId} for: ${reason}`);
+    await interaction.reply(`UID ${userId} (<@${userId}>) was successfully banned from the server. ${reason}`);
   } catch (error) {
     console.error('Error banning user:', error);
     await interaction.reply({ 
-      content: 'There was an error banning the user. Make sure the ID is valid.',
+      content: '⚠️ An error occurred while attempting to ban the target member. Please ensure that you have the correct UID and permissions.',
       ephemeral: true 
     });
   }
