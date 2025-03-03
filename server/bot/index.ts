@@ -16,6 +16,8 @@ import * as coinflip from "./slashCommands/coinflip";
 import * as random from "./slashCommands/random";
 import * as userinfo from "./slashCommands/userinfo";
 
+import "../keepalive"; // Make sure the path is correct
+
 const intents = new IntentsBitField([
   IntentsBitField.Flags.Guilds,
   IntentsBitField.Flags.GuildMessages,
