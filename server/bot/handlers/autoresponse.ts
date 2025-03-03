@@ -12,13 +12,13 @@ const autoResponses: AutoResponse[] = [
       "mhm yes im good roingus :3",
       "*wags tail happily* that would be me!",
       "*happy roingus noises* me! me! i am!",
-      "hehe im the bestest roingus~",
+      "hehe im a good roingus :D",
       "*proud roingus pose* yours truly!",
-      "aww you noticed! *bounces excitedly*"
+      "ME ME ME! *bounces excitedly*"
     ]
   },
   {
-    triggers: ["good bot", "good roingus"],
+    triggers: ["good roingus"],
     responses: [
       "*happy beeping*",
       "thank you! *virtual tail wag*",
@@ -30,11 +30,31 @@ const autoResponses: AutoResponse[] = [
   {
     triggers: ["pat roingus", "pet roingus"],
     responses: [
-      "*happy mechanical purring*",
-      "*leans into the pets*",
-      "*whirrs contentedly*",
+      "*happy purring*",
+      "*leans into pets*",
+      "*chirps contentedly*",
       "more pets please! :3",
       "*nuzzles your hand*"
+    ]
+  },
+  {
+    triggers: ["bad roingus"],
+    responses: [
+      "waaaaaaaaaa",
+      ":(",
+      "what did i do :(",
+      "that was mean",
+      "*sad roingus noises*"
+    ]
+  },
+  {
+    triggers: ["roingus"],
+    responses: [
+      "roingus :3",
+      "hi i am roingus",
+      "roingus roingus roingus",
+      "# i am best roingus.",
+      "-# roingussssssss... *hiss*"
     ]
   }
 ];
