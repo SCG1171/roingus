@@ -1,7 +1,6 @@
 import express from "express";
 import { registerRoutes } from "./routes";
 import { log } from "./vite";
-import "../keepalive"; // Make sure the path is correct
 
 const app = express();
 
