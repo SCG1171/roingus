@@ -33,14 +33,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const member = await interaction.guild.members.fetch(user.id).catch(() => null);
   
   if (!member) {
-    return interaction.reply({ content: 'That user is not in the server!', ephemeral: true });
+    return interaction.reply({ content: '⚠️ The target user is not in this server or channel.', ephemeral: true });
   }
 
   try {
     await member.timeout(duration * 60 * 1000, reason);
-    await interaction.reply(`Successfully timed out ${user.tag} for ${duration} minutes. Reason: ${reason}`);
+    await interaction.reply(`${user.tag} was timed out for ${duration}. Reason: ${reason}`);
   } catch (error) {
     console.error('Error timing out member:', error);
-    await interaction.reply({ content: 'There was an error timing out the member.', ephemeral: true });
+    await interaction.reply({ content: '⚠️ An error occurred while attempting to time out the target member. Please try again.', ephemeral: true });
   }
 }
