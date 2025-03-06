@@ -12,10 +12,10 @@ const autoResponses: AutoResponse[] = [
     triggers: ["who's a good roingus", "whos a good roingus", "who is a good roingus"],
     responses: [
       "mhm yes im good roingus :3",
-      "*wags tail happily* that would be me!",
+      "*wags tail happily* meee",
       "*happy roingus noises* me! me! i am!",
       "hehe im a good roingus :D",
-      "*proud roingus pose* yours truly!",
+      "*proud roingus pose* me i am a certified good roingus :3",
       "ME ME ME! *bounces excitedly*"
     ]
   },
@@ -93,7 +93,7 @@ export async function handleAutoResponse(message: Message) {
       memory.push({ role: "assistant", content: aiResponse }); // Store response in memory
       return message.reply(aiResponse);
     } else {
-      return message.reply("⚠️ Roingus is having a stroke. Please try again later.");
+      return message.reply("⚠️ roingus is having a stroke please try again later");
     }
   }
 }
