@@ -6,7 +6,7 @@ interface AutoResponse {
   responses: string[];
 }
 
-// **Core predefined responses**
+// **Predefined responses**
 const autoResponses: AutoResponse[] = [
   {
     triggers: ["who's a good roingus", "whos a good roingus", "who is a good roingus"],
@@ -50,11 +50,12 @@ async function getMemoryAIResponse(userId: string, message: string): Promise<str
 
   // **Convert history to OpenAI-compatible format**
   const formattedHistory = history.map(entry => ({
-    role: entry.role as "system" | "user" | "assistant",
+    role: entry.role, 
     content: entry.content
   }));
 
-  const aiResponse = await getAIResponse(formattedHistory);
+  // **Fix: Convert the conversation history into a single string**
+  const aiResponse = await getAIResponse(JSON.stringify(formattedHistory));
 
   if (aiResponse) {
     history.push({ role: "assistant", content: aiResponse });
