@@ -51,17 +51,17 @@ export async function handleMemberJoin(member: GuildMember): Promise<boolean> {
       const systemChannel = guild.systemChannel;
       if (systemChannel && systemChannel.isTextBased()) {
         await systemChannel.send({
-          content: '🚨 **WARNING: POTENTIAL RAID DETECTED**\n' +
+          content: '# 🚨 **WARNING: POTENTIAL RAID DETECTED!**\n' +
             `${tracker.count} members joined in the last ${JOIN_WINDOW / 1000} seconds.\n` +
-            'Auto-moderation has:\n' +
-            '- Increased server verification level\n' +
-            `- Timed out ${tracker.count} recent joins\n` +
-            'Please review these actions and adjust as needed.'
+            '**I\'m running security actions to prevent these slanks from raiding your server.**\n' +
+            'Increasing server verification level to High...\n' +
+            `Timing out ${tracker.count} recent joins...\n` +
+            '**Please review these actions and adjust as needed. Thank you so much for using roingus!**'
         });
       }
       return true;
     } catch (error) {
-      console.error('Error handling potential raid:', error);
+      console.error('Error handling potential raid. Please ban new members manually. Error traceback:', error);
     }
   }
 
