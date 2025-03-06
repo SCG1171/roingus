@@ -1,19 +1,20 @@
 import { Configuration, OpenAIApi } from "openai";
 import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
+dotenv.config(); // Load .env file
 
 const openai = new OpenAIApi(
   new Configuration({
-    apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in Render
+    apiKey: process.env.OPENAI_API_KEY, // Ensure this is set in Render
   })
 );
 
-export async function getAIResponse(prompt: string): Promise<string | null> {
+// **Handles AI conversation**
+export async function getAIResponse(history: { role: "system" | "user" | "assistant"; content: string }[]) {
   try {
     const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      messages: [{ role: "system", content: "You are a playful Discord bot named Roingus." }, { role: "user", content: prompt }],
+      messages: history,
       max_tokens: 100,
       temperature: 0.7,
     });
