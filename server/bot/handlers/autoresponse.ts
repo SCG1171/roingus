@@ -25,7 +25,7 @@ const autoResponses: AutoResponse[] = [
 // **Memory for AI Responses**
 const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
 
-// Function to get a random predefined response
+// **Function to get a random predefined response**
 function getRandomResponse(message: string): string | null {
   const lowerMessage = message.toLowerCase();
   for (const response of autoResponses) {
@@ -39,20 +39,27 @@ function getRandomResponse(message: string): string | null {
 // **Handles AI conversation with memory**
 async function getMemoryAIResponse(userId: string, message: string): Promise<string | null> {
   if (!conversationHistory.has(userId)) {
-    conversationHistory.set(userId, [{ role: "system", content: "You are a playful Discord bot named Roingus." }]);
+    conversationHistory.set(userId, [
+      { role: "system", content: "You are a playful Discord bot named Roingus. Your tone is cheerful and friendly." }
+    ]);
   }
 
   // Add user message to conversation history
   const history = conversationHistory.get(userId)!;
   history.push({ role: "user", content: message });
 
-  // Convert history to OpenAI-compatible format
-  const aiResponse = await getAIResponse(history);
+  // **Convert history to OpenAI-compatible format**
+  const formattedHistory = history.map(entry => ({
+    role: entry.role as "system" | "user" | "assistant",
+    content: entry.content
+  }));
+
+  const aiResponse = await getAIResponse(formattedHistory);
 
   if (aiResponse) {
     history.push({ role: "assistant", content: aiResponse });
 
-    // Limit memory to the last 5 interactions
+    // **Limit memory to the last 5 interactions**
     if (history.length > 10) history.splice(1, history.length - 5);
 
     return aiResponse;
@@ -64,7 +71,7 @@ async function getMemoryAIResponse(userId: string, message: string): Promise<str
 export async function handleAutoResponse(message: Message) {
   if (message.author.bot) return;
 
-  // Check if user mentioned Roingus
+  // **Check if user mentioned Roingus**
   const isMentioned = message.mentions.has(message.client.user!, { ignoreEveryone: true });
 
   if (isMentioned) {
@@ -76,7 +83,7 @@ export async function handleAutoResponse(message: Message) {
     }
   }
 
-  // Check for predefined responses
+  // **Check for predefined responses**
   const response = getRandomResponse(message.content);
   if (response) {
     return message.reply(response);
