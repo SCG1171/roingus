@@ -1,99 +1,84 @@
 import { Message } from "discord.js";
-import { getAIResponse } from "../utils/openai"; // Import AI function
+import { getAIResponse } from "../utils/openai"; // Ensure this file exists
 
 interface AutoResponse {
   triggers: string[];
   responses: string[];
 }
 
-// Predefined responses
+// **Core predefined responses**
 const autoResponses: AutoResponse[] = [
   {
     triggers: ["who's a good roingus", "whos a good roingus", "who is a good roingus"],
-    responses: [
-      "mhm yes im good roingus :3",
-      "*wags tail happily* meee",
-      "*happy roingus noises* me! me! i am!",
-      "hehe im a good roingus :D",
-      "*proud roingus pose* me i am a certified good roingus :3",
-      "ME ME ME! *bounces excitedly*"
-    ]
+    responses: ["mhm yes im good roingus :3", "hehe im a good roingus :D", "ME ME ME! *bounces excitedly*"]
   },
   {
     triggers: ["bad roingus"],
-    responses: [
-      "waaaaaaaaaa",
-      ":(",
-      "what did i do :(",
-      "that was mean",
-      "*sad roingus noises*"
-    ]
+    responses: ["waaaaaaaaaa", ":(", "what did i do :(", "that was mean", "*sad roingus noises*"]
   },
   {
     triggers: ["roingus"],
-    responses: [
-      "roingus :3",
-      "hi i am roingus",
-      "roingus roingus roingus",
-      "# i am best roingus.",
-      "-# roingussssssss... *hiss*",
-      "*poof* roingus."
-    ]
+    responses: ["roingus :3", "hi i am roingus", "roingus roingus roingus", "# i am best roingus."]
   }
 ];
 
-// Conversation memory storage
-const conversationMemory = new Map<string, { role: "system" | "user" | "assistant", content: string }[]>();
+// **Memory for AI Responses**
+const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
 
 // Function to get a random predefined response
 function getRandomResponse(message: string): string | null {
   const lowerMessage = message.toLowerCase();
-
   for (const response of autoResponses) {
     if (response.triggers.some(trigger => lowerMessage.includes(trigger))) {
-      const randomIndex = Math.floor(Math.random() * response.responses.length);
-      return response.responses[randomIndex];
+      return response.responses[Math.floor(Math.random() * response.responses.length)];
     }
   }
-  
   return null;
 }
 
-// Main handler function
+// **Handles AI conversation with memory**
+async function getMemoryAIResponse(userId: string, message: string): Promise<string | null> {
+  if (!conversationHistory.has(userId)) {
+    conversationHistory.set(userId, [{ role: "system", content: "You are a playful Discord bot named Roingus." }]);
+  }
+
+  // Add user message to conversation history
+  const history = conversationHistory.get(userId)!;
+  history.push({ role: "user", content: message });
+
+  // Convert history to OpenAI-compatible format
+  const aiResponse = await getAIResponse(history);
+
+  if (aiResponse) {
+    history.push({ role: "assistant", content: aiResponse });
+
+    // Limit memory to the last 5 interactions
+    if (history.length > 10) history.splice(1, history.length - 5);
+
+    return aiResponse;
+  }
+  return null;
+}
+
+// **Main handler function**
 export async function handleAutoResponse(message: Message) {
   if (message.author.bot) return;
 
-  // Check for predefined responses first
-  const response = getRandomResponse(message.content);
-  if (response) {
-    return message.reply(response);
-  }
-
-  // Check if Roingus was mentioned
+  // Check if user mentioned Roingus
   const isMentioned = message.mentions.has(message.client.user!, { ignoreEveryone: true });
 
   if (isMentioned) {
-    const userId = message.author.id;
-
-    // Initialize user conversation memory if it doesn't exist
-    if (!conversationMemory.has(userId)) {
-      conversationMemory.set(userId, [{ role: "system", content: "You are a playful and friendly Discord bot named Roingus." }]);
-    }
-
-    // Retrieve and update conversation memory
-    const memory = conversationMemory.get(userId)!;
-    memory.push({ role: "user", content: message.content });
-
-    // Keep memory within last 5 messages for efficiency
-    if (memory.length > 6) memory.splice(1, memory.length - 5);
-
-    // Get AI-generated response
-    const aiResponse = await getAIResponse(memory);
+    const aiResponse = await getMemoryAIResponse(message.author.id, message.content);
     if (aiResponse) {
-      memory.push({ role: "assistant", content: aiResponse }); // Store response in memory
       return message.reply(aiResponse);
     } else {
-      return message.reply("⚠️ roingus is having a stroke please try again later");
+      return message.reply("⚠️ Roingus is having a stroke. Please try again later.");
     }
+  }
+
+  // Check for predefined responses
+  const response = getRandomResponse(message.content);
+  if (response) {
+    return message.reply(response);
   }
 }
