@@ -72,7 +72,7 @@ export async function handleAutoResponse(message: Message) {
     if (aiResponse) {
       return message.reply(aiResponse);
     } else {
-      return message.reply("⚠️ Roingus is having a stroke. Please try again later.");
+      return message.reply("😵 roingus is having a stroke please try again later.");
     }
   }
 
