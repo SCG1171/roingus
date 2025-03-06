@@ -85,7 +85,7 @@ export async function handleAutoResponse(message: Message) {
     if (aiResponse) {
       return message.reply(aiResponse);
     } else {
-      return message.reply("Oops! My AI brain had a hiccup. Try again later!");
+      return message.reply("roingus is having a stroke please try again later");
     }
   }
 
