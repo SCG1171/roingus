@@ -52,7 +52,7 @@ export async function loadCommands() {
 }
 
 export async function handleCommand(client: Client, message: Message) {
-  if (!message.content.startsWith("!") || message.author.bot) return;
+  if (!message.content.startsWith("roingus/") || message.author.bot) return;
 
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift()?.toLowerCase();
