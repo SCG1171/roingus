@@ -22,8 +22,9 @@ const autoResponses: AutoResponse[] = [
   }
 ];
 
-// **Memory for AI Responses**
+// **AI Memory System (Limits AI history to prevent excessive API usage)**
 const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
+const HISTORY_LIMIT = 5; // Stores the last 5 interactions per user
 
 // **Function to get a random predefined response**
 function getRandomResponse(message: string): string | null {
@@ -40,7 +41,7 @@ function getRandomResponse(message: string): string | null {
 async function getMemoryAIResponse(userId: string, message: string): Promise<string | null> {
   if (!conversationHistory.has(userId)) {
     conversationHistory.set(userId, [
-      { role: "system", content: "You are a playful Discord bot named Roingus. Your tone is cheerful and friendly." }
+      { role: "system", content: "You are a friendly and playful Discord bot named Roingus." }
     ]);
   }
 
@@ -48,23 +49,19 @@ async function getMemoryAIResponse(userId: string, message: string): Promise<str
   const history = conversationHistory.get(userId)!;
   history.push({ role: "user", content: message });
 
-  // **Convert history to OpenAI-compatible format**
-  const formattedHistory = history.map(entry => ({
-    role: entry.role, 
-    content: entry.content
-  }));
+  // Ensure history does not exceed limit
+  if (history.length > HISTORY_LIMIT) {
+    history.splice(1, history.length - HISTORY_LIMIT);
+  }
 
-  // **Fix: Convert the conversation history into a single string**
-  const aiResponse = await getAIResponse(JSON.stringify(formattedHistory));
+  // **Send conversation history to OpenAI**
+  const aiResponse = await getAIResponse(userId, history);
 
   if (aiResponse) {
     history.push({ role: "assistant", content: aiResponse });
-
-    // **Limit memory to the last 5 interactions**
-    if (history.length > 10) history.splice(1, history.length - 5);
-
     return aiResponse;
   }
+
   return null;
 }
 
