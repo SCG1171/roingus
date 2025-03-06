@@ -20,21 +20,21 @@ const autoResponses: AutoResponse[] = [
   {
     triggers: ["good roingus"],
     responses: [
-      "*happy beeping*",
-      "thank you! *virtual tail wag*",
-      "*proud robot noises*",
-      "aww shucks ≧◡≦",
+      "*happy squeaking*",
+      "i am good roingus",
+      "*bouncing happily* yay :)",
+      "# I AM BEST ROINGUS.",
       "*happy dance*"
     ]
   },
   {
-    triggers: ["pat roingus", "pet roingus"],
+    triggers: ["pat roingus", "pet roingus", "pets roingus", "pats roingus"],
     responses: [
-      "*happy purring*",
-      "*leans into pets*",
-      "*chirps contentedly*",
-      "more pets please! :3",
-      "*nuzzles your hand*"
+      "*happy squeaking*",
+      "*leans into pets* i am good roingus :3",
+      "*chirps contentedly* roingus :3",
+      "gimmie pets please! :3",
+      "*nuzzles* roingus roingus roingus :3"
     ]
   },
   {
@@ -54,7 +54,8 @@ const autoResponses: AutoResponse[] = [
       "hi i am roingus",
       "roingus roingus roingus",
       "# i am best roingus.",
-      "-# roingussssssss... *hiss*"
+      "-# roingussssssss... *hiss*",
+      "*poof* roingus."
     ]
   }
 ];
