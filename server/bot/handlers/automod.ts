@@ -10,8 +10,8 @@ interface JoinTracker {
 const joinTracking = new Collection<string, JoinTracker>();
 
 // Constants for rate limiting
-const JOIN_THRESHOLD = 10; // Number of joins
-const JOIN_WINDOW = 30000; // 30 seconds
+const JOIN_THRESHOLD = 5; // Number of joins
+const JOIN_WINDOW = 20000; // 20 seconds
 
 // Check for raid attempts
 export async function handleMemberJoin(member: GuildMember): Promise<boolean> {
