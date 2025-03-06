@@ -2,11 +2,11 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits, 
 
 export const command = new SlashCommandBuilder()
   .setName('imgpurge')
-  .setDescription('Delete multiple image attachments from a channel')
+  .setDescription('Purge image attachments from a channel.')
   .addIntegerOption(option =>
     option
       .setName('amount')
-      .setDescription('Number of images to delete (max 100)')
+      .setDescription('Number of images to delete. Maximum is 100.')
       .setRequired(true)
       .setMinValue(1)
       .setMaxValue(100))
@@ -14,11 +14,11 @@ export const command = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild) {
-    return interaction.reply({ content: 'This command can only be used in a server!', ephemeral: true });
+    return interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
   }
 
   if (!(interaction.channel instanceof TextChannel)) {
-    return interaction.reply({ content: 'This command can only be used in text channels!', ephemeral: true });
+    return interaction.reply({ content: 'This command can only be used in text channels.', ephemeral: true });
   }
 
   const amount = interaction.options.getInteger('amount', true);
@@ -36,9 +36,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const deleted = await interaction.channel.bulkDelete(imageMessages, true);
-    await interaction.editReply(`Successfully deleted ${deleted.size} image messages.`);
+    await interaction.editReply(`${deleted.size} attachments were purged.`);
   } catch (error) {
     console.error('Error purging images:', error);
-    await interaction.editReply('There was an error deleting image messages. Messages older than 14 days cannot be bulk deleted.');
+    await interaction.editReply('⚠️ An error occured while attempting to purge images. Messages older than 14 days cannot be purged.');
   }
 }
