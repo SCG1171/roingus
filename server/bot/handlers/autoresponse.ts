@@ -1,8 +1,5 @@
 import { Message } from "discord.js";
-import { Configuration, OpenAIApi } from "openai";
-import dotenv from "dotenv";
-
-dotenv.config(); // Load API key from .env
+import { getAIResponse } from "../utils/openai"; // Import AI function
 
 interface AutoResponse {
   triggers: string[];
@@ -23,6 +20,16 @@ const autoResponses: AutoResponse[] = [
     ]
   },
   {
+    triggers: ["bad roingus"],
+    responses: [
+      "waaaaaaaaaa",
+      ":(",
+      "what did i do :(",
+      "that was mean",
+      "*sad roingus noises*"
+    ]
+  },
+  {
     triggers: ["roingus"],
     responses: [
       "roingus :3",
@@ -35,14 +42,10 @@ const autoResponses: AutoResponse[] = [
   }
 ];
 
-// OpenAI API Setup
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in your environment variables
-  })
-);
+// Conversation memory storage
+const conversationMemory = new Map<string, { role: "system" | "user" | "assistant", content: string }[]>();
 
-// Function to check predefined responses
+// Function to get a random predefined response
 function getRandomResponse(message: string): string | null {
   const lowerMessage = message.toLowerCase();
 
@@ -56,42 +59,41 @@ function getRandomResponse(message: string): string | null {
   return null;
 }
 
-// AI Response Function
-async function getAIResponse(prompt: string): Promise<string | null> {
-  try {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo", // Use GPT-4 if needed
-      messages: [{ role: "system", content: "You are a playful Discord bot named Roingus." }, { role: "user", content: prompt }],
-      max_tokens: 100,
-      temperature: 0.7,
-    });
-
-    return response.data.choices[0]?.message?.content || null;
-  } catch (error) {
-    console.error("OpenAI API Error:", error);
-    return null;
-  }
-}
-
 // Main handler function
 export async function handleAutoResponse(message: Message) {
   if (message.author.bot) return;
 
-  // Check if user mentioned Roingus
-  const isMentioned = message.mentions.has(message.client.user!, { ignoreEveryone: true });
-
-  if (isMentioned) {
-    const aiResponse = await getAIResponse(message.content);
-    if (aiResponse) {
-      return message.reply(aiResponse);
-    } else {
-      return message.reply("roingus is having a stroke please try again later");
-    }
-  }
-
-  // Check for predefined responses
+  // Check for predefined responses first
   const response = getRandomResponse(message.content);
   if (response) {
     return message.reply(response);
+  }
+
+  // Check if Roingus was mentioned
+  const isMentioned = message.mentions.has(message.client.user!, { ignoreEveryone: true });
+
+  if (isMentioned) {
+    const userId = message.author.id;
+
+    // Initialize user conversation memory if it doesn't exist
+    if (!conversationMemory.has(userId)) {
+      conversationMemory.set(userId, [{ role: "system", content: "You are a playful and friendly Discord bot named Roingus." }]);
+    }
+
+    // Retrieve and update conversation memory
+    const memory = conversationMemory.get(userId)!;
+    memory.push({ role: "user", content: message.content });
+
+    // Keep memory within last 5 messages for efficiency
+    if (memory.length > 6) memory.splice(1, memory.length - 5);
+
+    // Get AI-generated response
+    const aiResponse = await getAIResponse(memory);
+    if (aiResponse) {
+      memory.push({ role: "assistant", content: aiResponse }); // Store response in memory
+      return message.reply(aiResponse);
+    } else {
+      return message.reply("⚠️ Roingus is having a stroke. Please try again later.");
+    }
   }
 }
