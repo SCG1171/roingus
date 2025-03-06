@@ -1,5 +1,5 @@
 import { Client, Collection, Message } from "discord.js";
-import { existsSync, readdirSync } from "fs";
+import { existsSync, mkdirSync, readdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { checkCooldown } from "../utils/cooldown";
@@ -26,10 +26,11 @@ async function loadCommandFile(filePath: string) {
 export async function loadCommands() {
   const commandsPath = join(__dirname, "../bot/commands");
 
-  // ✅ Check if the directory exists before loading commands
+  // ✅ Ensure the commands directory exists
   if (!existsSync(commandsPath)) {
-    console.error(`❌ ERROR: Commands directory does not exist at ${commandsPath}`);
-    return;
+    console.error(`❌ ERROR: Commands directory does not exist at ${commandsPath}, creating it now.`);
+    mkdirSync(commandsPath, { recursive: true });
+    return; // Prevent further execution since there are no commands yet
   }
 
   console.log(`📂 Loading commands from: ${commandsPath}`);
@@ -52,7 +53,7 @@ export async function loadCommands() {
 }
 
 export async function handleCommand(client: Client, message: Message) {
-  if (!message.content.startsWith("roingus/") || message.author.bot) return;
+  if (!message.content.startsWith("roing:") || message.author.bot) return; // 🔄 Fixed Prefix
 
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift()?.toLowerCase();
@@ -62,6 +63,11 @@ export async function handleCommand(client: Client, message: Message) {
   const command = commands.get(commandName);
   if (!command) {
     return message.reply("⚠️ That command doesn't exist! Use !help to see available commands.");
+  }
+
+  // ✅ Check if the command has an execute function
+  if (!command.execute) {
+    return message.reply("⚠️ This command is missing an execute function. Please report this to the bot owner!");
   }
 
   if (await checkCooldown(message.author.id, command.name, command.cooldown)) {
