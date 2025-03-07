@@ -15,11 +15,11 @@ export const command = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild) {
-    return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
+    return interaction.reply({ content: "This command can only be used in a server!", ephemeral: true });
   }
 
   if (!(interaction.channel instanceof TextChannel)) {
-    return interaction.reply({ content: "This command can only be used in text channels.", ephemeral: true });
+    return interaction.reply({ content: "This command can only be used in text channels!", ephemeral: true });
   }
 
   const amount = interaction.options.getInteger("amount", true);
@@ -35,9 +35,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     if (imageMessages.size === 0) {
-      return interaction.editReply("⚠️ I couldn't find any images to delete.");
+      return interaction.editReply("⚠️ No image messages found to delete.");
     }
-    
+
     // Only delete messages newer than 14 days
     const now = Date.now();
     const toDelete = imageMessages.filter(msg => now - msg.createdTimestamp < 1209600000); // 14 days in milliseconds
@@ -46,8 +46,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       return interaction.editReply("⚠️ No images found within the deletable timeframe (last 14 days).");
     }
 
+    // **✅ Fix the MapIterator issue by converting to an array**
+    const toDeleteArray = [...toDelete.values()]; // Convert iterator to array
+
     let deletedCount = 0;
-    for (const message of toDelete.values()) {
+    for (const message of toDeleteArray) {
       await message.delete();
       deletedCount++;
     }
@@ -55,6 +58,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply(`✅ Successfully deleted ${deletedCount} image messages.`);
   } catch (error) {
     console.error("❌ Error deleting image messages:", error);
-    await interaction.editReply("⚠️ There was an error while attempting to purge messages. Messages older than 14 days cannot be deleted.");
+    await interaction.editReply("⚠️ Error deleting messages. Messages older than 14 days cannot be bulk deleted.");
   }
 }
