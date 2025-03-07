@@ -8,6 +8,7 @@ import * as ban from "./slashCommands/ban";
 import * as kick from "./slashCommands/kick";
 import * as timeout from "./slashCommands/timeout";
 import * as purge from "./slashCommands/purge";
+import * as imgpurge from "./slashCommands/imgpurge";
 import * as warn from "./slashCommands/warn";
 import * as hackban from "./slashCommands/hackban";
 import * as tempban from "./slashCommands/tempban";
