@@ -50,7 +50,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
     
     // **Call Hugging Face API for Llama**
     const response = await axios.post(
-      "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct",
       { inputs: message },
       {
         headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` },
