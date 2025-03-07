@@ -1,55 +1,46 @@
-import { OpenAI } from "openai";
-import dotenv from "dotenv";
+import { PerplexityAI } from "perplexity-ai";
 
-dotenv.config();
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Cooldown map to track last API call per user
+// Cooldown system to avoid spam
 const cooldowns = new Map<string, number>();
 const COOLDOWN_TIME = 30000; // 30 seconds cooldown
 
-// Conversation history map (memory)
-const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
+// Memory system to track conversations
+const conversationHistory = new Map<string, { role: "user" | "assistant"; content: string }[]>();
 const HISTORY_LIMIT = 5; // Stores the last 5 interactions per user
 
 export async function getAIResponse(userId: string, message: string): Promise<string | null> {
   const now = Date.now();
-  
-  // **Cooldown enforcement**
+
+  // **Enforce cooldown to prevent spam**
   if (cooldowns.has(userId) && now - cooldowns.get(userId)! < COOLDOWN_TIME) {
     return "roingus is trying to breathe slow down! jeez";
   }
 
-  // **Initialize user history if not present**
+  // **Initialize conversation history**
   if (!conversationHistory.has(userId)) {
-    conversationHistory.set(userId, [
-      { role: "system", content: "You are a playful roingus - a species of gerboa. Keep responses short and simple. Max of 15 words. roingus." }
-    ]);
+    conversationHistory.set(userId, []);
   }
 
-  // **Retrieve and update conversation history**
   const history = conversationHistory.get(userId)!;
   history.push({ role: "user", content: message });
 
-  // **Trim history if it exceeds the limit**
+  // **Limit history to the last 5 messages**
   if (history.length > HISTORY_LIMIT) {
     history.splice(1, history.length - HISTORY_LIMIT);
   }
 
   try {
-    // **Call OpenAI API**
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo-1106",
+    // **Call Perplexity AI’s Free LLaMA 3 Model**
+    const response = await PerplexityAI.chat.completions.create({
+      model: "llama-3-8b", // This uses LLaMA 3 8B model
       messages: history,
-      max_tokens: 45, // Slightly increased for flexibility
-      temperature: 0.4, // Lower temperature for concise responses
+      max_tokens: 50, // Keep responses short
+      temperature: 0.4, // Lower temperature for better accuracy
     });
 
-    const reply = response.choices[0]?.message?.content?.trim() || null;
+    const reply = response.choices[0]?.message?.content || null;
 
     if (reply) {
-      // **Store AI response in conversation history**
       history.push({ role: "assistant", content: reply });
     }
 
@@ -58,7 +49,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
 
     return reply;
   } catch (error) {
-    console.error("❌ OpenAI API Error:", error);
+    console.error("❌ LLaMA 3 API Error:", error);
     return "roingus is having a brainfart please try again";
   }
 }
