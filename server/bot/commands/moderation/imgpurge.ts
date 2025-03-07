@@ -15,11 +15,11 @@ export const command = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild) {
-    return interaction.reply({ content: "This command can only be used in a server!", ephemeral: true });
+    return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
   }
 
   if (!(interaction.channel instanceof TextChannel)) {
-    return interaction.reply({ content: "This command can only be used in text channels!", ephemeral: true });
+    return interaction.reply({ content: "This command can only be used in text channels.", ephemeral: true });
   }
 
   const amount = interaction.options.getInteger("amount", true);
@@ -27,25 +27,34 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   try {
     await interaction.deferReply({ ephemeral: true });
 
-    const messages = await interaction.channel.messages.fetch({ limit: 100 });
-    
+    const messages = await interaction.channel.messages.fetch({ limit: amount });
+
     // Filter messages containing image attachments only
     const imageMessages = messages.filter(msg =>
-      msg.attachments.some(attachment =>
-        attachment.contentType?.startsWith("image/")
-      )
+      msg.attachments.some(attachment => attachment.contentType?.startsWith("image/"))
     );
 
-    const toDelete = imageMessages.first(amount);
+    if (imageMessages.size === 0) {
+      return interaction.editReply("⚠️ I couldn't find any images to delete.");
+    }
+    
+    // Only delete messages newer than 14 days
+    const now = Date.now();
+    const toDelete = imageMessages.filter(msg => now - msg.createdTimestamp < 1209600000); // 14 days in milliseconds
 
-    if (!toDelete?.length) {
-      return interaction.editReply("No image messages found to delete!");
+    if (toDelete.size === 0) {
+      return interaction.editReply("⚠️ No images found within the deletable timeframe (last 14 days).");
     }
 
-    const deleted = await interaction.channel.bulkDelete(toDelete, true);
-    await interaction.editReply(`Successfully deleted ${deleted.size} image messages.`);
+    let deletedCount = 0;
+    for (const message of toDelete.values()) {
+      await message.delete();
+      deletedCount++;
+    }
+
+    await interaction.editReply(`✅ Successfully deleted ${deletedCount} image messages.`);
   } catch (error) {
-    console.error("Error deleting image messages:", error);
-    await interaction.editReply("There was an error deleting messages. Messages older than 14 days cannot be bulk deleted.");
+    console.error("❌ Error deleting image messages:", error);
+    await interaction.editReply("⚠️ There was an error while attempting to purge messages. Messages older than 14 days cannot be deleted.");
   }
 }
