@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const HUGGINGFACE_API_KEY = process.env.HF_API_KEY;
+
 // Cooldown system to prevent spam
 const cooldowns = new Map<string, number>();
 const COOLDOWN_TIME = 30000; // 30 seconds cooldown
@@ -40,20 +42,25 @@ export async function getAIResponse(userId: string, message: string): Promise<st
     const response = await axios.post(
       "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat",
       { inputs: message },
-      { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+      { headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` } }
     );
 
-    const reply = response.data.generated_text || "roingus is confused, please try again later.";
+    // Ensure the response format is correct
+    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+      const reply = response.data[0]?.generated_text || "roingus is confused, please try again later.";
 
-    // **Store AI response in conversation history**
-    history.push({ role: "assistant", content: reply });
+      // **Store AI response in conversation history**
+      history.push({ role: "assistant", content: reply });
 
-    // **Update cooldown**
-    cooldowns.set(userId, now);
+      // **Update cooldown**
+      cooldowns.set(userId, now);
 
-    return reply;
+      return reply;
+    }
+
+    return "roingus doesn't know what to say :(";
   } catch (error) {
-    console.error("Llama API Error:", error);
+    console.error("Llama API Error:", error.response?.data || error.message);
     return "roingus is having a brainfart please try again.";
   }
 }
