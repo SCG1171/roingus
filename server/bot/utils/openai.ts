@@ -59,8 +59,13 @@ export async function getAIResponse(userId: string, message: string): Promise<st
     }
 
     return "roingus doesn't know what to say :(";
-  } catch (error) {
+  } catch (error: unknown) {
+  if (axios.isAxiosError(error)) {
     console.error("Llama API Error:", error.response?.data || error.message);
-    return "roingus is having a brainfart please try again.";
+  } else {
+    console.error("Unknown error:", error);
   }
+  return "roingus is having a brainfart please try again.";
+}
+
 }
