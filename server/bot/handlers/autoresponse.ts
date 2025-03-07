@@ -22,7 +22,7 @@ const autoResponses: AutoResponse[] = [
   }
 ];
 
-// **AI Memory System (Limits AI history to prevent excessive API usage)**
+// **Memory for AI Responses**
 const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
 const HISTORY_LIMIT = 5; // Stores the last 5 interactions per user
 
@@ -54,8 +54,8 @@ async function getMemoryAIResponse(userId: string, message: string): Promise<str
     history.splice(1, history.length - HISTORY_LIMIT);
   }
 
-  // **Send conversation history to OpenAI**
-  const aiResponse = await getAIResponse(userId, history);
+  // **Pass the array correctly to OpenAI**
+  const aiResponse = await getAIResponse(history);
 
   if (aiResponse) {
     history.push({ role: "assistant", content: aiResponse });
