@@ -24,7 +24,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
   // **Initialize user history if not present**
   if (!conversationHistory.has(userId)) {
     conversationHistory.set(userId, [
-      { role: "system", content: "You are a playful Discord bot named Roingus. Keep responses short and simple. Max of 15 words." }
+      { role: "system", content: "You are a playful roingus - a species of gerboa. Keep responses short and simple. Max of 15 words. roingus." }
     ]);
   }
 
@@ -42,8 +42,8 @@ export async function getAIResponse(userId: string, message: string): Promise<st
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
       messages: history,
-      max_tokens: 60, // Slightly increased for flexibility
-      temperature: 0.3, // Lower temperature for concise responses
+      max_tokens: 45, // Slightly increased for flexibility
+      temperature: 0.4, // Lower temperature for concise responses
     });
 
     const reply = response.choices[0]?.message?.content?.trim() || null;
