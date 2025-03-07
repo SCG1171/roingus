@@ -22,9 +22,6 @@ const autoResponses: AutoResponse[] = [
   }
 ];
 
-// **Memory for AI Responses**
-const conversationHistory = new Map<string, { role: "system" | "user" | "assistant"; content: string }[]>();
-
 // **Function to get a random predefined response**
 function getRandomResponse(message: string): string | null {
   const lowerMessage = message.toLowerCase();
@@ -32,32 +29,6 @@ function getRandomResponse(message: string): string | null {
     if (response.triggers.some(trigger => lowerMessage.includes(trigger))) {
       return response.responses[Math.floor(Math.random() * response.responses.length)];
     }
-  }
-  return null;
-}
-
-// **Handles AI conversation with memory**
-async function getMemoryAIResponse(userId: string, message: string): Promise<string | null> {
-  if (!conversationHistory.has(userId)) {
-    conversationHistory.set(userId, [
-      { role: "system", content: "You are a friendly and playful Discord bot named Roingus. Your tone is cheerful and friendly." }
-    ]);
-  }
-
-  // **Retrieve and update conversation history**
-  const history = conversationHistory.get(userId)!;
-  history.push({ role: "user", content: message });
-
-  // **Ensure correct function call with both arguments**
-  const aiResponse = await getAIResponse(userId, message); // ✅ FIX: Now passing both userId & message
-
-  if (aiResponse) {
-    history.push({ role: "assistant", content: aiResponse });
-
-    // **Limit memory to the last 5 interactions**
-    if (history.length > 10) history.splice(1, history.length - 5);
-
-    return aiResponse;
   }
   return null;
 }
@@ -70,7 +41,7 @@ export async function handleAutoResponse(message: Message) {
   const isMentioned = message.mentions.has(message.client.user!, { ignoreEveryone: true });
 
   if (isMentioned) {
-    const aiResponse = await getMemoryAIResponse(message.author.id, message.content);
+    const aiResponse = await getAIResponse(message.author.id, message.content);
     if (aiResponse) {
       return message.reply(aiResponse);
     } else {
