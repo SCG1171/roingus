@@ -54,7 +54,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
       { inputs: message },
       {
         headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` },
-        timeout: 15000 // 15 seconds timeout
+        timeout: 30000 //30s timeout
       }
     );
 
