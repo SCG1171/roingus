@@ -8,7 +8,7 @@ import * as ban from "./slashCommands/ban";
 import * as kick from "./slashCommands/kick";
 import * as timeout from "./slashCommands/timeout";
 import * as purge from "./slashCommands/purge";
-import * as imgpurge from "./slashCommands/imgpurge";
+import * as imgpurge from "./slashCommands/imgpurge"; // ✅ Ensure imgpurge is included
 import * as warn from "./slashCommands/warn";
 import * as hackban from "./slashCommands/hackban";
 import * as tempban from "./slashCommands/tempban";
@@ -17,7 +17,7 @@ import * as coinflip from "./slashCommands/coinflip";
 import * as random from "./slashCommands/random";
 import * as userinfo from "./slashCommands/userinfo";
 
-import "../keepalive"; // Make sure the path is correct
+import "../keepalive"; // Ensure this file exists
 
 const intents = new IntentsBitField([
   IntentsBitField.Flags.Guilds,
@@ -36,6 +36,7 @@ const commands = [
   kick,
   timeout,
   purge,
+  imgpurge, // ✅ Ensure imgpurge is included
   warn,
   hackban,
   tempban,
@@ -50,15 +51,11 @@ export async function startBot() {
   const clientId = process.env.CLIENT_ID;
 
   if (!token || !clientId) {
-    throw new Error(
-      "DISCORD_TOKEN or CLIENT_ID not found in environment variables",
-    );
+    throw new Error("DISCORD_TOKEN or CLIENT_ID not found in environment variables");
   }
 
   console.log("Starting Discord bot initialization...");
-  console.log(
-    `Token validation: length=${token.length}, starts with=${token.substring(0, 4)}...`,
-  );
+  console.log(`Token validation: length=${token.length}, starts with=${token.substring(0, 4)}...`);
 
   const client = new Client({ intents });
 
@@ -70,22 +67,22 @@ export async function startBot() {
   try {
     console.log("Attempting to log in to Discord...");
     await client.login(token);
-    console.log("Successfully logged in to Discord");
+    console.log("✅ Successfully logged in to Discord");
 
     // Deploy slash commands
     await deployCommands(
       commands.map((c) => c.command),
       token,
-      clientId,
+      clientId
     );
 
     // Load traditional commands
     console.log("Loading traditional commands...");
     await loadCommands();
-    console.log("Commands loaded successfully");
+    console.log("✅ Commands loaded successfully");
 
     client.once(Events.ClientReady, () => {
-      console.log(`Logged in as ${client.user?.tag}`);
+      console.log(`🎉 Logged in as ${client.user?.tag}`);
     });
 
     // Handle commands and autoresponses
@@ -104,15 +101,17 @@ export async function startBot() {
       if (!interaction.isChatInputCommand()) return;
 
       const command = slashCommands.get(interaction.commandName);
-      if (!command) return;
+      if (!command) {
+        console.warn(`⚠️ Command ${interaction.commandName} not found.`);
+        return;
+      }
 
       try {
         await command.execute(interaction);
       } catch (error) {
-        console.error(error);
+        console.error("❌ Error executing command:", error);
         const errorMessage = {
-          content:
-            "⚠️ An error occured while attempting to run this command. Please try again.",
+          content: "⚠️ An error occurred while attempting to run this command. Please try again.",
           ephemeral: true,
         };
         if (interaction.replied || interaction.deferred) {
@@ -125,7 +124,7 @@ export async function startBot() {
 
     return client;
   } catch (error) {
-    console.error("Error during bot initialization:", error);
+    console.error("❌ Error during bot initialization:", error);
     throw error;
   }
 }
