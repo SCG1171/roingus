@@ -55,7 +55,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       deletedCount++;
     }
 
-    await interaction.editReply(`✅ Successfully deleted ${deletedCount} image messages.`);
+    await interaction.editReply(`✅ ${deletedCount} messages deleted.`);
   } catch (error) {
     console.error("❌ Error deleting image messages:", error);
     await interaction.editReply("⚠️ Error deleting messages. Messages older than 14 days cannot be bulk deleted.");
