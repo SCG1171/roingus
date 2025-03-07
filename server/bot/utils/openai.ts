@@ -1,55 +1,59 @@
-import { PerplexityAI } from "perplexity-ai";
+import axios from "axios";
+import dotenv from "dotenv";
 
-// Cooldown system to avoid spam
+dotenv.config();
+
+// Cooldown system to prevent spam
 const cooldowns = new Map<string, number>();
 const COOLDOWN_TIME = 30000; // 30 seconds cooldown
 
-// Memory system to track conversations
-const conversationHistory = new Map<string, { role: "user" | "assistant"; content: string }[]>();
-const HISTORY_LIMIT = 5; // Stores the last 5 interactions per user
+// Memory for AI responses
+const conversationHistory = new Map<string, { role: string; content: string }[]>();
+const HISTORY_LIMIT = 5;
 
 export async function getAIResponse(userId: string, message: string): Promise<string | null> {
   const now = Date.now();
 
-  // **Enforce cooldown to prevent spam**
+  // **Cooldown enforcement**
   if (cooldowns.has(userId) && now - cooldowns.get(userId)! < COOLDOWN_TIME) {
     return "roingus is trying to breathe slow down! jeez";
   }
 
-  // **Initialize conversation history**
+  // **Initialize user history if not present**
   if (!conversationHistory.has(userId)) {
-    conversationHistory.set(userId, []);
+    conversationHistory.set(userId, [
+      { role: "system", content: "You are a playful Discord bot named Roingus. Respond in a fun and friendly way." }
+    ]);
   }
 
+  // **Retrieve and update conversation history**
   const history = conversationHistory.get(userId)!;
   history.push({ role: "user", content: message });
 
-  // **Limit history to the last 5 messages**
+  // **Trim history if it exceeds the limit**
   if (history.length > HISTORY_LIMIT) {
     history.splice(1, history.length - HISTORY_LIMIT);
   }
 
   try {
-    // **Call Perplexity AI’s Free LLaMA 3 Model**
-    const response = await PerplexityAI.chat.completions.create({
-      model: "llama-3-8b", // This uses LLaMA 3 8B model
-      messages: history,
-      max_tokens: 50, // Keep responses short
-      temperature: 0.4, // Lower temperature for better accuracy
-    });
+    // **Call Hugging Face API for Llama**
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/meta-llama/Llama-2-7b-chat",
+      { inputs: message },
+      { headers: { Authorization: `Bearer ${process.env.HF_API_KEY}` } }
+    );
 
-    const reply = response.choices[0]?.message?.content || null;
+    const reply = response.data.generated_text || "roingus is confused, please try again later.";
 
-    if (reply) {
-      history.push({ role: "assistant", content: reply });
-    }
+    // **Store AI response in conversation history**
+    history.push({ role: "assistant", content: reply });
 
     // **Update cooldown**
     cooldowns.set(userId, now);
 
     return reply;
   } catch (error) {
-    console.error("❌ LLaMA 3 API Error:", error);
-    return "roingus is having a brainfart please try again";
+    console.error("Llama API Error:", error);
+    return "roingus is having a brainfart please try again.";
   }
 }
