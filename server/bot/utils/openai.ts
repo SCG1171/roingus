@@ -24,7 +24,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
   // **Initialize user history if not present**
   if (!conversationHistory.has(userId)) {
     conversationHistory.set(userId, [
-      { role: "system", content: "You are a friendly and playful Discord bot named Roingus." }
+      { role: "system", content: "You are a playful Discord bot named Roingus. Keep responses short and simple. Max of 15 words." }
     ]);
   }
 
@@ -42,11 +42,11 @@ export async function getAIResponse(userId: string, message: string): Promise<st
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
       messages: history,
-      max_tokens: 50,
-      temperature: 0.5,
+      max_tokens: 60, // Slightly increased for flexibility
+      temperature: 0.3, // Lower temperature for concise responses
     });
 
-    const reply = response.choices[0]?.message?.content || null;
+    const reply = response.choices[0]?.message?.content?.trim() || null;
 
     if (reply) {
       // **Store AI response in conversation history**
@@ -58,7 +58,7 @@ export async function getAIResponse(userId: string, message: string): Promise<st
 
     return reply;
   } catch (error) {
-    console.error("OpenAI API Error:", error);
+    console.error("❌ OpenAI API Error:", error);
     return "roingus is having a brainfart please try again";
   }
 }
