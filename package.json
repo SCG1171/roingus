@@ -74,8 +74,7 @@
     "ws": "^8.18.0",
     "zod": "^3.23.8",
     "zod-validation-error": "^3.4.0",
-    "openai": "^4.0.0",
-    "dotenv": "^16.0.3"
+    "perplexity-ai": "^1.0.0"  // 🔥 Added Perplexity AI for LLaMA 3
   },
   "devDependencies": {
     "@replit/vite-plugin-cartographer": "^0.0.4",
